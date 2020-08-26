@@ -17,9 +17,9 @@ def get_filters():
         (str) month - name of the month to filter by, or "all" to apply no month filter
         (str) day - name of the day of week to filter by, or "all" to apply no day filter
     """
-    # declaring some default variables
-    month = None
-    day = None
+    # declaring variables
+    month = 'all'
+    day = 'all'
 
     print('Hello! Let\'s explore some US bikeshare data!')
     # get user input for city (chicago, new york city, washington). HINT: Use a while loop to handle invalid inputs
@@ -54,7 +54,7 @@ def get_filters():
             break
 
     print('-' * 40)
-    return city, month, day
+    return city, month, day, time_filter
 
 
 def month_prompt():
@@ -65,12 +65,12 @@ def month_prompt():
     """
 
     # generate month list
-    month_list = ['all']
+    month_list = []
     for n in range(1, 7):
         month_list.append(calendar.month_name[n].lower())
 
     while True:
-        month = input('Which month? January, February, March, April, May, June\n>>>').lower()
+        month = input('Which month? January, February, March, April, May, June\n>>> ').lower()
 
         if month in month_list:
             break
@@ -86,13 +86,13 @@ def day_prompt():
     Return:
     (int) day
     """
-    day_list = ['all']
+    day_list = []
     for i in range(1, 8):
         day_list.append(i)
 
     while True:
         try:
-            day = int(input("Which day? Please type your response as an integer (e.g., 1=Sunday)\n>>>"))
+            day = int(input("Which day? Please type your response as an integer (e.g., 1=Sunday)\n>>> "))
             if day in day_list:
                 break
             else:
@@ -114,6 +114,22 @@ def load_data(city, month, day):
     Returns:
         df - Pandas DataFrame containing city data filtered by month and day
     """
+
+    # loading requested file data based on city name
+    filename = city.replace(' ', '_') + '.csv'
+    df = pd.read_csv(filename)
+
+    # change 'Start Time' and 'End Time' to date object for further processing
+    df['Start Time'] = pd.to_datetime(df['Start Time'])
+    df['End Time'] = pd.to_datetime(df['End Time'])
+
+    # add month filter
+    if month != 'all':
+        df = df[df['Start Time'].dt.month_name() == month.title()]
+
+    # add day filter
+    if day != 'all':
+        df = df[df['Start Time'].dt.day == day]
 
     return df
 
@@ -164,17 +180,33 @@ def trip_duration_stats(df):
     print('-' * 40)
 
 
-def user_stats(df):
+def user_stats(df, time_filter):
     """Displays statistics on bikeshare users."""
 
     print('\nCalculating User Stats...\n')
     start_time = time.time()
 
     # Display counts of user types
+    if 'User Type' in df.columns:
+        print('User Type Statistics...')
+        print("Subscribers: {}     Customers:{}     Filter: {}\n".format(len(df[df['User Type'] == 'Subscriber']),
+                                                                         len(df[df['User Type'] == 'Customer']),
+                                                                         time_filter))
 
     # Display counts of gender
+    if 'Gender' in df.columns:
+        print('Gender Statistics...')
+        print("Male: {}     Female: {}     Filter: {}\n".format(len(df[df['Gender'] == 'Male']),
+                                                                len(df[df['Gender'] == 'Female']),
+                                                                time_filter))
 
     # Display earliest, most recent, and most common year of birth
+    if 'Birth Year' in df.columns:
+        print('User Age Statistics...')
+        df['Birth Year'] = pd.to_datetime(df['Birth Year'])
+        print("Earliest: {}    Most Recent:{}     Most Common:{}\n".format(int(df['Birth Year'].dt.year.max()),
+                                                                           int(df['Birth Year'].dt.year.min()),
+                                                                           int(df['Birth Year'].dt.year.mode()[0])))
 
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-' * 40)
@@ -182,13 +214,13 @@ def user_stats(df):
 
 def main():
     while True:
-        city, month, day = get_filters()
-        #df = load_data(city, month, day)
+        city, month, day, time_filter = get_filters()
+        df = load_data(city, month, day)
 
-        #time_stats(df)
-        #station_stats(df)
-        #trip_duration_stats(df)
-        #user_stats(df)
+        # time_stats(df)
+        # station_stats(df)
+        # trip_duration_stats(df)
+        user_stats(df, time_filter)
 
         restart = input('\nWould you like to restart? Enter yes or no.\n')
         if restart.lower() != 'yes':

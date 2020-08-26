@@ -87,12 +87,12 @@ def day_prompt():
     (int) day
     """
     day_list = []
-    for i in range(1, 8):
+    for i in range(7):
         day_list.append(i)
 
     while True:
         try:
-            day = int(input("Which day? Please type your response as an integer (e.g., 1=Sunday)\n>>> "))
+            day = int(input("Which day? Please type your response as an integer (e.g., 0=Monday)\n>>> "))
             if day in day_list:
                 break
             else:
@@ -129,7 +129,7 @@ def load_data(city, month, day):
 
     # add day filter
     if day != 'all':
-        df = df[df['Start Time'].dt.day == day]
+        df = df[df['Start Time'].dt.dayofweek == day]
 
     return df
 
@@ -166,15 +166,17 @@ def station_stats(df):
     print('-' * 40)
 
 
-def trip_duration_stats(df):
+def trip_duration_stats(df, time_filter):
     """Displays statistics on the total and average trip duration."""
 
     print('\nCalculating Trip Duration...\n')
     start_time = time.time()
 
     # display total travel time
+    print("Total Duration: {}    Count: {}     ".format(df['Trip Duration'].sum(), df['Trip Duration'].count()), end='')
 
     # display mean travel time
+    print('Avg Duration:{}     Filter: {}'.format(df['Trip Duration'].mean(), time_filter))
 
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-' * 40)
@@ -203,10 +205,10 @@ def user_stats(df, time_filter):
     # Display earliest, most recent, and most common year of birth
     if 'Birth Year' in df.columns:
         print('User Age Statistics...')
-        df['Birth Year'] = pd.to_datetime(df['Birth Year'])
-        print("Earliest: {}    Most Recent:{}     Most Common:{}\n".format(int(df['Birth Year'].dt.year.max()),
-                                                                           int(df['Birth Year'].dt.year.min()),
-                                                                           int(df['Birth Year'].dt.year.mode()[0])))
+        print("Earliest: {}    Most Recent:{}     Most Common:{}\n".format(str(int(df['Birth Year'].max())),
+                                                                           str(int(df['Birth Year'].min())),
+                                                                           str(int(df['Birth Year'].mode()[0]))
+                                                                           ))
 
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-' * 40)
@@ -219,7 +221,7 @@ def main():
 
         # time_stats(df)
         # station_stats(df)
-        # trip_duration_stats(df)
+        trip_duration_stats(df, time_filter)
         user_stats(df, time_filter)
 
         restart = input('\nWould you like to restart? Enter yes or no.\n')

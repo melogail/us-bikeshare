@@ -24,7 +24,7 @@ def get_filters():
     print('Hello! Let\'s explore some US bikeshare data!')
     # get user input for city (chicago, new york city, washington). HINT: Use a while loop to handle invalid inputs
     while True:
-        city = input("Would you like to see data for Chicago, New York City, Washington?\n>>> ")
+        city = input("Would you like to see data for Chicago, New York City, Washington?\n>>> ").strip()
         # validate user input
         if city in CITY_DATA:
             break
@@ -117,7 +117,15 @@ def load_data(city, month, day):
 
     # loading requested file data based on city name
     filename = city.replace(' ', '_') + '.csv'
-    df = pd.read_csv(filename)
+    try:
+        df = pd.read_csv(filename)
+
+    except FileNotFoundError as e:
+        print(e,
+              "\nFile '{}' NOT FOUND! Please make sure you have the data file in the same directory of the program...\n".format(
+                  filename))
+        print("Program terminated...")
+        exit()
 
     # change 'Start Time' and 'End Time' to date object for further processing
     df['Start Time'] = pd.to_datetime(df['Start Time'])
@@ -224,7 +232,7 @@ def user_stats(df, time_filter):
             str(int(df['Birth Year'].max())),
             str(int(df['Birth Year'].mode()[0])),
             time_filter
-            ))
+        ))
 
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-' * 40)

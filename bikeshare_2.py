@@ -103,6 +103,41 @@ def day_prompt():
     return day
 
 
+def display_raw_data(df):
+    """Display raw data of 5 elements upon each call for the user
+
+    Return:
+    (dict) data
+    """
+
+    # prompt user to see raw data
+    ask = input("Do you like to see raw data (yes, no)? ")
+
+    if ask == 'yes':
+        print("\nProcessing raw data...\n")
+
+        raw_data = df.to_dict(orient="records")
+        i = 1
+
+        for data in raw_data:
+            print('Record #' + str(i))
+            print('-'*40)
+            for key, value in data.items():
+                print(str(key) + ": " + str(value))
+
+            print("\n")
+
+            if i % 5 == 0:
+                more = input("Do you like to see more data? (yes, no) ")
+                if more == 'yes':
+                    i += 1
+                    print("\n")
+                    continue
+                else:
+                    break
+            i += 1
+
+
 def load_data(city, month, day):
     """
     Loads data for the specified city and filters by month and day if applicable.
@@ -247,6 +282,7 @@ def main():
         station_stats(df, time_filter)
         trip_duration_stats(df, time_filter)
         user_stats(df, time_filter)
+        display_raw_data(df)
 
         restart = input('\nWould you like to restart? Enter yes or no.\n')
         if restart.lower() != 'yes':

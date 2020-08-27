@@ -134,33 +134,47 @@ def load_data(city, month, day):
     return df
 
 
-def time_stats(df):
+def time_stats(df, time_filter):
     """Displays statistics on the most frequent times of travel."""
 
     print('\nCalculating The Most Frequent Times of Travel...\n')
     start_time = time.time()
 
+    # convert 'Start Time' column to pd.datetime object
+    df['Start Time'] = pd.to_datetime(df['Start Time'])
+
     # display the most common month
+    print("Most Common Month: {}    ".format(df['Start Time'].dt.month_name().mode()[0]))
 
     # display the most common day of week
+    print("Most Common Day of Week: {}    ".format(df['Start Time'].dt.day_name().mode()[0]))
 
     # display the most common start hour
+    print("Most Common Start Hour: {}    ".format(df['Start Time'].dt.hour.mode()[0]))
+
+    # display choosen filter
+    print("Filter: {}".format(time_filter))
 
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-' * 40)
 
 
-def station_stats(df):
+def station_stats(df, time_filter):
     """Displays statistics on the most popular stations and trip."""
 
     print('\nCalculating The Most Popular Stations and Trip...\n')
     start_time = time.time()
 
     # display most commonly used start station
+    print("Start Station: {}, Count: {}    ".format(df['Start Station'].mode()[0], df['Start Station'].nunique()))
 
     # display most commonly used end station
+    print("End Station: {}, Count: {}    ".format(df['End Station'].mode()[0], df['End Station'].nunique()))
 
     # display most frequent combination of start station and end station trip
+    most_frequent_combination = df['Start Station'] + df['End Station']
+    print("Most Frequent of Combined Stations: {}     Filter: {}".format(most_frequent_combination.mode()[0],
+                                                                         time_filter))
 
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-' * 40)
@@ -205,10 +219,12 @@ def user_stats(df, time_filter):
     # Display earliest, most recent, and most common year of birth
     if 'Birth Year' in df.columns:
         print('User Age Statistics...')
-        print("Earliest: {}    Most Recent:{}     Most Common:{}\n".format(str(int(df['Birth Year'].max())),
-                                                                           str(int(df['Birth Year'].min())),
-                                                                           str(int(df['Birth Year'].mode()[0]))
-                                                                           ))
+        print("Earliest: {}    Most Recent: {}     Most Common: {}    Filter: {}\n".format(
+            str(int(df['Birth Year'].min())),
+            str(int(df['Birth Year'].max())),
+            str(int(df['Birth Year'].mode()[0])),
+            time_filter
+            ))
 
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-' * 40)
@@ -219,8 +235,8 @@ def main():
         city, month, day, time_filter = get_filters()
         df = load_data(city, month, day)
 
-        # time_stats(df)
-        # station_stats(df)
+        time_stats(df, time_filter)
+        station_stats(df, time_filter)
         trip_duration_stats(df, time_filter)
         user_stats(df, time_filter)
 
